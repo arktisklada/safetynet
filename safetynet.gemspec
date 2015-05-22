@@ -17,10 +17,10 @@ Gem::Specification.new do |spec|
     spec.post_install_message = File.read('UPGRADING.md')
   end
 
-  spec.files = Dir["{app,config,db,lib}/**/*", "LICENSE.TXT", "Rakefile", "README.rdoc"]
+  spec.files = Dir["{app,config,db,lib}/**/*", "LICENSE.TXT", "Rakefile", "README.md"]
   spec.test_files = Dir["test/**/*"]
 
-  spec.add_dependency "rails", "= 4.1.4"
+  spec.add_dependency "rails", "~> 4.0"
 
   spec.add_development_dependency 'sqlite3'
 
