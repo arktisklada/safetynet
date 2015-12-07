@@ -1,0 +1,9 @@
+machine:
+  ruby:
+    version: 2.2.2
+database:
+  override:
+    - echo 'Skipping database'
+test:
+  override:
+    - bundle exec rake test
