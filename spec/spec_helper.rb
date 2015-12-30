@@ -14,7 +14,7 @@ require "rspec/rails"
 require "safetynet"
 
 RSpec.configure do |config|
-  config.after(:all) do
+  config.after(:each) do
     ActionMailer::Base.deliveries.clear
   end
 end
