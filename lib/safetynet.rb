@@ -1,21 +1,19 @@
-require 'safetynet/version'
 require 'active_support/concern'
 require 'active_support/core_ext/numeric/time'
+require 'safetynet/history'
+require 'safetynet/notification_mailer'
 
 module Safetynet
   extend ActiveSupport::Concern
 
-
   # Saves a record for the current method
-  def safe_safetynet_delivery(address, channel, method)
-    options = self.class.safetynet_options
-    log = Safetynet::History.new({
+  def save_safetynet_delivery(address, channel, method)
+    Safetynet::History.create({
       address: address,
       method: method,
       channel: channel.to_s,
       created_at: Time.now
     })
-    log.save
   end
 
   # Returns true if delivery is permitted through the given channel
@@ -58,6 +56,7 @@ module Safetynet
         channel: channel,
         method: method
       })
+
       if timeframe != false
         count_query = count_query.where('created_at >= ?', Time.now - timeframe)
       end
@@ -69,14 +68,15 @@ module Safetynet
     end
 
     if permit_delivery
-      safe_safetynet_delivery(address, channel, method)
+      save_safetynet_delivery(address, channel, method)
     else
-      AdminMailer.delivery_denied_notification(address, channel, method, {
+      Safetynet::NotificationMailer.delivery_denied_notification(address, channel, method, {
         limit: limit,
         timeframe: timeframe,
         message: 'Safetynet has caught a method!'
       }).deliver
     end
+
     permit_delivery
   end
 
@@ -93,8 +93,8 @@ module Safetynet
 
     # Update the mail.to array with those who are whitelisted and permitted
     mail.to = mail.to.keep_if do |email|
-      next true if is_whitelisted?(email) || !defined?(@user) || email == @user.email
-      permit_delivery?(address, channel, method, limit, timeframe)
+      next true if is_whitelisted?(email)
+      permit_delivery?(email, channel, method, limit, timeframe)
     end
 
     permit_delivery = mail.to.any?
